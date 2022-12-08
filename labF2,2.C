@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <Windows.h>
 
 int main(){
 
- double Eqt(double x); // наше рівняння, підставляєм сюди x, отримуємо Y
+ double Eqt(double x); 
 
  double Left_Rect(double a,double b, int n); // інтегрування, метод лівних квадратів
  double Right_Rect(double a,double b, int n); // інтегрування, метод праих квадратів
@@ -36,8 +35,6 @@ int main(){
   SetConsoleCP(1251);
 
 //====================================== отримуємо значення параметрів =========================================//
-
-
   printf("\n Виберіть метод обчислення інтегралу:\n");
 
   printf("\n   1 - лівих квадратів");
