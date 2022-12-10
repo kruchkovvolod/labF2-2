@@ -1,186 +1,221 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <conio.h>
 #include <math.h>
 
-int main(){
+#define eps 0.0001
 
- double Eqt(double x); 
+unsigned int method_select( void );
+double f( double x );
+void print_result(double a, double b, unsigned int n, double I );
+double left_rectangle( double a, double b, unsigned int n );
+double right_rectangle( double a, double b, unsigned int n );
+double trap( double a, double b, unsigned int n );
+double simpson( double a, double b, unsigned int n );
 
- double Left_Rect(double a,double b, int n); // інтегрування, метод лівних квадратів
- double Right_Rect(double a,double b, int n); // інтегрування, метод праих квадратів
- double Trapeze(double a,double b, int n); // інтегрування, метод трапецій
- double Parabola(double a,double b, int n); //  // інтегрування, метод парабол
+int main()
+{
+    unsigned int num_of_method;
+    const double a = 1;
+    const double b = 3;
+    unsigned int n = 100;
+    double I;
+    double I1, I2;
+    unsigned int N;
+    n=1000;
+    num_of_method  =  method_select();
 
- void Tabulation(double value);// табуляція в залежност від значень, щоб великі значенння не ламали таблицю
-
- int A[20]; // массив значень a
- int B[20]; // массив значень b
- int N[20]; // массив значень N, завжди != 0
-
- int Metod_Used = 0; /* вибраний метотд інтегрування :
-                         1 - метод лівних квадратів
-                         2 - метод праих квадратів
-                         3 - метод трапецій
-                         4 - метод парабол
-                         5 - виводи всі значення, при цьому delta не виводиться
-                     */
-
- int Gaps = 1; // кількість проміжків, завжди >= 1
-
- double DeltaMath = 0;
-
- int StD_CNT = 0; // суди прибавляєм +2, і рахуєм значення по новій, поки 0.00001 <= DeltaMath && DeltaMath <= 0.001
-
-  SetConsoleOutputCP(1251); // вмикаєм кирилицю
-  SetConsoleCP(1251);
-
-//====================================== отримуємо значення параметрів =========================================//
-  printf("\n Виберіть метод обчислення інтегралу:\n");
-
-  printf("\n   1 - лівих квадратів");
-  printf("\n   2 - правих квадратів");
-  printf("\n   3 - трапецій");
-  printf("\n   4 - парабол");
-  printf("\n   5 - всі методи\n");
-
-  printf("\n ВАША ВІДПОВІДЬ: ");
-  while(scanf("%d", &Metod_Used) && Metod_Used - 1u >= 4){// перевіряєм правильність введених данних, діапазон методів 1-5
-  printf("\n error, please try again: \n");
-  }
+    if (num_of_method == 1 ){
+        I = left_rectangle(a, b, n);
+        print_result(a, b, n, I);
+        N = 0;
+              do{
+           N = N + 2;
+           I1 = left_rectangle(a, b, N);
+           I2 = left_rectangle(a, b, N+2);
+        }while(  fabs(I2-I1) > eps );
+        printf("\n\nN=%u,  I1(N)=%.8lf\n", N, I1);
 
 
-  printf("\n Виберіть кількість проміжків: ");
-  scanf("%d", &Gaps);
-  if(Gaps == 0){Gaps = 1;} // перевіряєм правильність введених данних, мінімальна кількість проміжків повинна бути > 1
-  printf("\n");
 
 
-  for(int i = 0; i < Gaps; i++){ // в залежності від вибраної раніше кількості проміжків вводимо параметри для кожного з них
-   do{
-    printf(" Проміжок #%d , введіть a, b, N : ",i+1);
-    scanf("%d %d %d",&A[i], &B[i], &N[i]);
-   }while(N[i] == 0); // перевіряєм правильність введених данних, N не повинно борівнювати 0
-  }
+    }
+    else if( num_of_method == 2 ){
+        I=right_rectangle(a, b, n);
+        print_result(a, b, n, I);
 
-//====================================== друкуєм зоголовок таблиці =========================================//
-printf("\n");
- switch(Metod_Used){ // в залежності від обраного методу
-  case 5: // виводим всі значення
-   case 1: // метод лівих квадратів
-     printf("             Left_Rect          ");
-     if(Metod_Used != 5){printf("Delta N            ");}//прикол з виденням всіх значень
-   if(Metod_Used == 1){break;}
-   case 2: // метод правих квадратів
-     printf("Right_Rect         ");
-     if(Metod_Used != 5){printf("Delta N            ");}//прикол з виденням всіх значень
-   if(Metod_Used == 2){break;}
-   case 3: // метод трапецій
-     printf("Trapeze            ");
-     if(Metod_Used != 5){printf("Delta N            ");}//прикол з виденням всіх значень
-   if(Metod_Used == 3){break;}
-   case 4: // метод парабол
-     printf("Parabola           ");
-     if(Metod_Used != 5){printf("Delta N            ");}//прикол з виденням всіх значень
-   if(Metod_Used == 3){break;}
-  break;
- }
-//====================================== друкуємо саму таблицю =========================================//
-for(int i = 0; i < Gaps; i++){ //виводим на екран значення всіх введених проміжків
-do{
- printf("\n#%d",i+1);
- Tabulation(i+1);
- StD_CNT += 2;
- switch(Metod_Used){ // в залежності від обраного методу
-  case 5:// виводим всі значення
-   case 1:// метод лівих квадратів
-     printf("%f", Left_Rect(A[i],B[i],N[i]));
-     Tabulation(Left_Rect(A[i],B[i],N[i]));
-     if(Metod_Used != 5){//виводим Delty, якщо вибраний лише один метод
-      DeltaMath = Left_Rect(A[i],B[i],N[i]) - Left_Rect(A[i],B[i],N[i] + StD_CNT);
-      printf("%f", DeltaMath);Tabulation(DeltaMath);
-     }
-   if(Metod_Used == 1){break;}
-   case 2:// метод правих квадратів
-     printf("%f", Right_Rect(A[i],B[i],N[i]));
-     Tabulation(Right_Rect(A[i],B[i],N[i]));
-     if(Metod_Used != 5){//виводим Delty, якщо вибраний лише один метод
-       DeltaMath = Right_Rect(A[i],B[i],N[i]) - Right_Rect(A[i],B[i],N[i] + StD_CNT);
-       printf("%f", DeltaMath);Tabulation(DeltaMath);
-     }
-   if(Metod_Used == 2){break;}
-   case 3:// метод трапецій
-     printf("%f", Trapeze(A[i],B[i],N[i]));
-     Tabulation(Trapeze(A[i],B[i],N[i]));
-     if(Metod_Used != 5){//виводим Delty, якщо вибраний лише один метод
-      DeltaMath = Trapeze(A[i],B[i],N[i]) - Trapeze(A[i],B[i],N[i] + StD_CNT);
-      printf("%f", DeltaMath);Tabulation(DeltaMath);
-      }
-   if(Metod_Used == 3){break;}
-   case 4:// метод парабол
-     printf("%f", Parabola(A[i],B[i],N[i]));
-     Tabulation(Parabola(A[i],B[i],N[i]));
-     if(Metod_Used != 5){//виводим Delty, якщо вибраний лише один метод
-       DeltaMath = Parabola(A[i],B[i],N[i]) - Parabola(A[i],B[i],N[i] + StD_CNT);
-       printf("%f", DeltaMath);Tabulation(DeltaMath);
-     }
-   if(Metod_Used == 3){break;}
-  break;
- }
-}while(0.00001 <= DeltaMath && DeltaMath <= 0.001); // виводим значення з заданою похибкою
+        N = 0;
+       do{
+           N = N + 2;
+           I1 = right_rectangle(a, b, N);
+           I2 = right_rectangle(a, b, N+2);
+        }while(  fabs(I2-I1) > eps );
+
+        printf("\n\nN=%u,  I1(N)=%.8lf\n", N, I1);
+
+    }else if( num_of_method == 3 ){
+        I=trap(a, b, n);
+        print_result(a, b, n, I);
+
+       N = 0;
+       do{
+           N = N + 2;
+           I1 = trap(a, b, N);
+           I2 = trap(a, b, N+2);
+        }while(  fabs(I2-I1) > eps );
+
+        printf("\n\nN=%u,  I1(N)=%.8lf\n", N, I1);
+    }
+    else if ( num_of_method == 4 ){
+
+         I=simpson(a, b, n);
+         print_result(a, b, n, I);
+
+         N = 0;
+       do{
+           N = N + 2;
+           I1 = simpson(a, b, N);
+           I2 = simpson(a, b, N+2);
+        }while(  fabs(I2-I1) > eps );
+
+        printf("\n\nN=%u,  I1(N)=%.8lf\n", N, I1);
+
+    }
+
+
+
+    return 0;
+}
+unsigned int method_select(void)
+{
+    unsigned int temp;
+
+    printf("\n\n Choose your method:\n1 - left \n2 - right \n3 - trap \n4 - Simpson\n>");
+    scanf("%u", &temp);
+
+    while(  temp < 1  ||   temp > 4 ){
+        printf("\n!!!!Invalid data. Method: 1, 2, 3 or 4: ");
+        scanf("%u", &temp);
+    }
+
+    switch(temp){
+      case 1:
+             printf("\nYou chose method of LEFT RECTANGLE");
+             break;
+
+      case 2:
+             printf("\nYou chose method of RIGHT RECTANGLE");
+             break;
+
+      case 3:
+             printf("\nYou chose method of TRAPEZOID");
+             break;
+
+      case 4:
+             printf("\nYou chose method of SIMPSON");
+             break;
+    }
+
+
+    return temp;
+}
+double f( double x )
+{
+    double y;
+
+    y = x/(2*x*x+3*x-2);
+
+    return y;
+}
+double left_rectangle(double a, double b, unsigned int n)
+{
+    double h;
+    unsigned int k;
+    double x;
+    double sum = 0;
+
+    h = ( b - a ) / n;
+    x = a;
+
+    for (k = 0;  k <= n-1;  k++ ){
+      sum = sum + f(x);
+      x = x + h;
+    }
+
+   return sum * h;
 }
 
- printf("\n\n\n");
-  return 0;
+double right_rectangle(double a, double b, unsigned int n)
+{
+    double h;
+    unsigned int k;
+    double x;
+    double sum = 0;
+
+    h = ( b - a ) / n;
+    x = a+h;
+
+    for (k = 0;  k <= n-1;  k++ ){
+      sum = sum + f(x);
+      x = x + h;
+    }
+
+   return sum * h;
 }
 
+double trap(double a, double b, unsigned int n)
+{
+    double h;
+    unsigned int k;
+    double x;
+    double sum = 0;
+    double tes;
 
-double Eqt(double x){ // рівняння
-   double math_X = 0;
-   math_X = (2*x+3);
-   math_X *= x;
-   math_X += 2;
-  return 1.0/math_X;
+    h = ( b - a ) / n;
+    x = a+h;
+
+    for (k = 0;  k <= n-1;  k++ ){
+      sum = sum + f(x);
+      x = x + h;
+    }
+    tes = (f(a)/2)+sum+(f(b)/2);
+
+   return tes * h;
 }
-double Left_Rect(double a,double b, int n){ // метод лівих квадратів
-   double h = (b - a) / n;
-   double sum = 0.0;
-   for(int i = 0; i <= n - 1; i++){
-    sum += h * Eqt(a + i * h);
-   }
- return sum;
+
+   double simpson(double a, double b, unsigned int n)
+{
+    double h;
+    unsigned int k;
+    double x;
+    double sum = 0;
+    double sum1 = 0;
+    double pot;
+
+    h = ( b - a ) / n;
+    x = a+h;
+
+    for (k = 0;  k <= n-1;  k++ ){
+      sum = sum +f(x);
+      x= x + h;
+    }
+    x = a+(2*h);
+    for (k = 2;  k <= n-1;  k+=2){
+        sum1 = sum1 + f(x);
+        x=x+h;
+    }
+        pot = f(a)+(4*sum)+(2*sum1)+f(b);
+
+   return pot*h/3;
 }
-double Right_Rect(double a,double b, int n){ // метод правих квадратів
-   double h = (b - a) / n;
-   double sum = 0.0;
-   for(int i = 1; i <= n; i++){
-    sum += h * Eqt(a + i * h);
-   }
- return sum;
-}
-double Trapeze(double a,double b, int n){  // метод трапецій
-   double h = (b - a) / n;
-   double sum = Eqt(a) + Eqt(b);
-   for(int i = 1; i <= n - 1; i++){
-    sum += 2 * Eqt(a + i * h);
-   }
-   sum *= h / 2;
- return sum;
-}
-double Parabola(double a, double b, int n){  // метод парабол
-   double h = (b - a) / n;
-   double sum = Eqt(a) + Eqt(b);
-   int k;
-   for(int i = 1; i <= n - 1; i++){
-    k = 2 + 2 * (i % 2);
-    sum += k * Eqt(a + i * h);
-   }
-   sum *= h / 3;
- return sum;
-}
-void Tabulation(double value){ // функція табуляції
- int i = 12 - (value / 10);
- while(i > 0){
-   i --;
-   printf(" ");
- }
+void print_result(double a, double b, unsigned int n, double I)
+{
+    system("cls");
+    printf("\n***********************");
+    printf("\n*       Results       *");
+    printf("\n***********************\n");
+
+    printf("a=%.2lf  b=%.2lf   n=%u    I = %.8lf", a, b, n, I);
+
+
 }
