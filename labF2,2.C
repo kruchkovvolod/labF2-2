@@ -22,7 +22,6 @@ int main()
     double I;
     double I1, I2;
     unsigned int N;
-    n=1000;
     num_of_method  =  method_select();
 
     if (num_of_method == 1 ){
